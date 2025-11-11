@@ -131,12 +131,24 @@
   margin: 0 auto;
 }
 
+.admin-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: calc(var(--spacing) * 3);
+  align-items: start;
+}
+
+.services-column {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 3);
+}
+
 .add-item-section,
 .items-section {
   background: rgba(26, 31, 58, 0.7);
   padding: calc(var(--spacing) * 4);
   border-radius: 16px;
-  margin-bottom: calc(var(--spacing) * 4);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(139, 92, 246, 0.15);
 }

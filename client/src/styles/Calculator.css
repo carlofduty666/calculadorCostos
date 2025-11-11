@@ -3,7 +3,7 @@
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary) 100%);
   padding: calc(var(--spacing) * 3);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .calculator-container::before {
@@ -289,6 +289,8 @@
   position: sticky;
   top: calc(var(--spacing) * 2.5);
   height: fit-content;
+  max-height: calc(100vh - calc(var(--spacing) * 5));
+  overflow-y: auto;
 }
 
 .summary-card {
@@ -313,6 +315,36 @@
   align-items: center;
   gap: calc(var(--spacing) * 1);
   font-family: 'Montserrat', sans-serif;
+}
+
+.selected-services {
+  margin-bottom: calc(var(--spacing) * 1.5);
+}
+
+.selected-services h3 {
+  margin: 0 0 calc(var(--spacing) * 1.5) 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.selected-services ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 1);
+}
+
+.selected-services li {
+  color: var(--text);
+  font-size: 13px;
+  padding: calc(var(--spacing) * 1) calc(var(--spacing) * 1.5);
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
 }
 
 .summary-item {

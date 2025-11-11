@@ -28,23 +28,6 @@ INSERT INTO admin (username, password, email) VALUES
 ('admin', '$2a$10$SKC/WL4jZ9o9cft3N2JZyO4ZnHmNJbTsKmlpgHHNEuffmL7W5nmg2', 'admin@example.com')
 ON DUPLICATE KEY UPDATE username=username;
 
--- Crear tabla de citas
-CREATE TABLE IF NOT EXISTS appointments (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  client_name VARCHAR(255) NOT NULL,
-  client_email VARCHAR(255) NOT NULL,
-  client_phone VARCHAR(20),
-  appointment_date DATE NOT NULL,
-  appointment_time TIME NOT NULL,
-  items JSON,
-  total DECIMAL(10, 2),
-  google_event_id VARCHAR(255),
-  status ENUM('pendiente', 'confirmada', 'completada', 'cancelada') DEFAULT 'pendiente',
-  notes TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- Insertar datos de ejemplo
 INSERT INTO items (nombre, precio, descripcion) VALUES
 ('Servicio A', 100.00, 'Descripción del servicio A'),

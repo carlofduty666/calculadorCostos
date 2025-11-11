@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HiOutlineShoppingCart, HiOutlineLockClosed, HiOutlineCheckCircle, HiOutlineXMark, HiOutlineArrowRight, HiOutlineCalculator, HiOutlineCurrencyDollar } from 'react-icons/hi2';
+import { PiShootingStarLight } from "react-icons/pi";
+import { AiOutlineNumber } from "react-icons/ai";
 import { LuRefreshCw } from 'react-icons/lu';
-import AppointmentModal from './AppointmentModal';
 import '../styles/Calculator.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -16,7 +17,30 @@ export default function Calculator() {
     total: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const hoverSoundRef = useRef(null);
+  const clickSoundRef = useRef(null);
+
+  useEffect(() => {
+    hoverSoundRef.current = new Audio('/sounds/bubble-hover.mp3');
+    clickSoundRef.current = new Audio('/sounds/bubble-click.mp3');
+    hoverSoundRef.current.preload = 'auto';
+    clickSoundRef.current.preload = 'auto';
+  }, []);
+
+  const playHoverSound = () => {
+    if (hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play().catch(() => {});
+    }
+  };
+
+  const playClickSound = () => {
+    if (clickSoundRef.current) {
+      clickSoundRef.current.currentTime = 0;
+      clickSoundRef.current.play().catch(() => {});
+    }
+  };
 
   // Cargar items
   useEffect(() => {
@@ -89,16 +113,6 @@ export default function Calculator() {
     setSelected({});
   };
 
-  const getSelectedItems = () => {
-    return items.filter((item) => selected[item.id]);
-  };
-
-  const handleOpenModal = () => {
-    if (getSelectedItems().length > 0) {
-      setIsModalOpen(true);
-    }
-  };
-
   if (loading) {
     return (
       <div className="calculator-container">
@@ -113,6 +127,13 @@ export default function Calculator() {
   }
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
+
+  const handleOpenCalendar = () => {
+    if (selectedCount === 0) {
+      return;
+    }
+    window.open('https://calendar.app.google/nFMP74CKUYwwLxpw7', '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div className="calculator-container">
@@ -131,7 +152,6 @@ export default function Calculator() {
         <p className="subtitle">Selecciona los servicios que necesitas</p>
         <a href="/admin" className="link-admin">
           <HiOutlineLockClosed size={18} />
-          Acceso Administrador
           <HiOutlineArrowRight size={16} />
         </a>
       </div>
@@ -141,7 +161,7 @@ export default function Calculator() {
         <div className="items-list">
           <div className="list-header">
             <h2>
-              <HiOutlineShoppingCart size={24} />
+              <PiShootingStarLight size={24} />
               Servicios Disponibles
             </h2>
             <div className="list-actions">
@@ -175,7 +195,11 @@ export default function Calculator() {
                 <div
                   key={item.id}
                   className={`item-card ${selected[item.id] ? 'selected' : ''}`}
-                  onClick={() => handleItemChange(item.id)}
+                  onClick={() => {
+                    playClickSound();
+                    handleItemChange(item.id);
+                  }}
+                  onMouseEnter={playHoverSound}
                 >
                   <input
                     type="checkbox"
@@ -201,9 +225,26 @@ export default function Calculator() {
               Resumen
             </h2>
 
+            {selectedCount > 0 && (
+              <>
+                <div className="selected-services">
+                  <h3>Servicios Seleccionados:</h3>
+                  <ul>
+                    {items
+                      .filter((item) => selected[item.id])
+                      .map((item) => (
+                        <li key={item.id}>{item.nombre}</li>
+                      ))}
+                  </ul>
+                </div>
+
+                <div className="summary-divider"></div>
+              </>
+            )}
+
             <div className="summary-item">
               <span>
-                <HiOutlineShoppingCart size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
+                <AiOutlineNumber size={16} style={{ display: 'inline-block', marginRight: '6px' }} />
                 Cantidad:
               </span>
               <strong>{total.cantidad}</strong>
@@ -225,7 +266,7 @@ export default function Calculator() {
               className="btn-schedule" 
               disabled={selectedCount === 0} 
               title="Agendar cita"
-              onClick={handleOpenModal}
+              onClick={handleOpenCalendar}
             >
               <HiOutlineCheckCircle size={18} />
               Agendar Cita
@@ -238,12 +279,6 @@ export default function Calculator() {
         </div>
       </div>
 
-      <AppointmentModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedItems={getSelectedItems()}
-        total={total}
-      />
     </div>
   );
 }

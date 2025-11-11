@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { HiOutlineArrowRightOnRectangle, HiOutlinePlus, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCheckCircle, HiOutlineXMark, HiOutlineExclamationCircle, HiOutlineListBullet, HiOutlineCurrencyDollar, HiOutlineSparkles } from 'react-icons/hi2';
-import AppointmentsManager from './AppointmentsManager';
 import '../styles/AdminPanel.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -22,6 +21,30 @@ export default function AdminPanel({ token, onLogout }) {
   // State para editar
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
+
+  const hoverSoundRef = useRef(null);
+  const clickSoundRef = useRef(null);
+
+  useEffect(() => {
+    hoverSoundRef.current = new Audio('/sounds/bubble-hover.mp3');
+    clickSoundRef.current = new Audio('/sounds/bubble-click.mp3');
+    hoverSoundRef.current.preload = 'auto';
+    clickSoundRef.current.preload = 'auto';
+  }, []);
+
+  const playHoverSound = () => {
+    if (hoverSoundRef.current) {
+      hoverSoundRef.current.currentTime = 0;
+      hoverSoundRef.current.play().catch(() => {});
+    }
+  };
+
+  const playClickSound = () => {
+    if (clickSoundRef.current) {
+      clickSoundRef.current.currentTime = 0;
+      clickSoundRef.current.play().catch(() => {});
+    }
+  };
 
   // Cargar items
   useEffect(() => {
@@ -147,185 +170,195 @@ export default function AdminPanel({ token, onLogout }) {
       )}
 
       <div className="admin-content">
-        {/* Formulario para agregar */}
-        <div className="add-item-section">
-          <h2>
-            <HiOutlineSparkles size={22} />
-            Agregar Nuevo Servicio
-          </h2>
-          <form onSubmit={handleAddItem}>
-            <div className="form-row">
-              <div className="form-group">
-                <label>
-                  <HiOutlineListBullet size={14} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
-                  Nombre Servicio *
-                </label>
-                <input
-                  type="text"
-                  value={formData.nombre}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nombre: e.target.value })
-                  }
-                  placeholder="Ej: Consultoría"
-                  disabled={loading}
-                />
-              </div>
+        <div className="admin-columns">
+          <div className="services-column">
+            <div className="add-item-section">
+              <h2>
+                <HiOutlineSparkles size={22} />
+                Agregar Nuevo Servicio
+              </h2>
+              <form onSubmit={handleAddItem}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>
+                      <HiOutlineListBullet size={14} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
+                      Nombre Servicio *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.nombre}
+                      onChange={(e) =>
+                        setFormData({ ...formData, nombre: e.target.value })
+                      }
+                      placeholder="Ej: Consultoría"
+                      disabled={loading}
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>
-                  <HiOutlineCurrencyDollar size={14} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
-                  Precio *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={formData.precio}
-                  onChange={(e) =>
-                    setFormData({ ...formData, precio: parseFloat(e.target.value) })
-                  }
-                  placeholder="0.00"
-                  disabled={loading}
-                />
-              </div>
+                  <div className="form-group">
+                    <label>
+                      <HiOutlineCurrencyDollar size={14} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
+                      Precio *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.precio}
+                      onChange={(e) =>
+                        setFormData({ ...formData, precio: parseFloat(e.target.value) })
+                      }
+                      placeholder="0.00"
+                      disabled={loading}
+                    />
+                  </div>
 
-              <div className="form-group">
-                <label>Descripción</label>
-                <input
-                  type="text"
-                  value={formData.descripcion}
-                  onChange={(e) =>
-                    setFormData({ ...formData, descripcion: e.target.value })
-                  }
-                  placeholder="Descripción opcional"
-                  disabled={loading}
-                />
-              </div>
+                  <div className="form-group">
+                    <label>Descripción</label>
+                    <input
+                      type="text"
+                      value={formData.descripcion}
+                      onChange={(e) =>
+                        setFormData({ ...formData, descripcion: e.target.value })
+                      }
+                      placeholder="Descripción opcional"
+                      disabled={loading}
+                    />
+                  </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-add"
-                title="Agregar nuevo servicio"
-              >
-                <HiOutlinePlus size={18} />
-                Agregar
-              </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-add"
+                    title="Agregar nuevo servicio"
+                  >
+                    <HiOutlinePlus size={18} />
+                    Agregar
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
-        </div>
 
-        {/* Lista de items */}
-        <div className="items-section">
-          <h2>
-            <HiOutlineListBullet size={22} />
-            Servicios Existentes ({items.length})
-          </h2>
-          {loading && items.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px 20px' }}>
-              Cargando servicios...
-            </p>
-          ) : items.length === 0 ? (
-            <p className="empty-message">No hay servicios aún. ¡Agrega uno para comenzar!</p>
-          ) : (
-            <div className="items-table">
-              {items.map((item) =>
-                editingId === item.id ? (
-                  <div key={item.id} className="item-row editing">
-                    <div className="item-field">
-                      <label>Nombre</label>
-                      <input
-                        type="text"
-                        value={editData.nombre}
-                        onChange={(e) =>
-                          setEditData({ ...editData, nombre: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="item-field">
-                      <label>Precio</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editData.precio}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            precio: parseFloat(e.target.value),
-                          })
-                        }
-                      />
-                    </div>
-                    <div className="item-field">
-                      <label>Descripción</label>
-                      <input
-                        type="text"
-                        value={editData.descripcion || ''}
-                        onChange={(e) =>
-                          setEditData({ ...editData, descripcion: e.target.value })
-                        }
-                      />
-                    </div>
-                    <div className="item-actions">
-                      <button
-                        onClick={() => handleSaveEdit(item.id)}
-                        className="btn-save"
-                        disabled={loading}
-                        title="Guardar cambios"
+            <div className="items-section">
+              <h2>
+                <HiOutlineListBullet size={22} />
+                Servicios Existentes ({items.length})
+              </h2>
+              {loading && items.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: '40px 20px' }}>
+                  Cargando servicios...
+                </p>
+              ) : items.length === 0 ? (
+                <p className="empty-message">No hay servicios aún. ¡Agrega uno para comenzar!</p>
+              ) : (
+                <div className="items-table">
+                  {items.map((item) =>
+                    editingId === item.id ? (
+                      <div key={item.id} className="item-row editing">
+                        <div className="item-field">
+                          <label>Nombre</label>
+                          <input
+                            type="text"
+                            value={editData.nombre}
+                            onChange={(e) =>
+                              setEditData({ ...editData, nombre: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="item-field">
+                          <label>Precio</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editData.precio}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                precio: parseFloat(e.target.value),
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="item-field">
+                          <label>Descripción</label>
+                          <input
+                            type="text"
+                            value={editData.descripcion || ''}
+                            onChange={(e) =>
+                              setEditData({ ...editData, descripcion: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="item-actions">
+                          <button
+                            onClick={() => handleSaveEdit(item.id)}
+                            className="btn-save"
+                            disabled={loading}
+                            title="Guardar cambios"
+                          >
+                            <HiOutlineCheckCircle size={16} />
+                            Guardar
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="btn-cancel"
+                            disabled={loading}
+                            title="Cancelar edición"
+                          >
+                            <HiOutlineXMark size={16} />
+                            Cancelar
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div 
+                        key={item.id} 
+                        className="item-row"
+                        onMouseEnter={playHoverSound}
                       >
-                        <HiOutlineCheckCircle size={16} />
-                        Guardar
-                      </button>
-                      <button
-                        onClick={handleCancelEdit}
-                        className="btn-cancel"
-                        disabled={loading}
-                        title="Cancelar edición"
-                      >
-                        <HiOutlineXMark size={16} />
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div key={item.id} className="item-row">
-                    <div className="item-info">
-                      <h3>{item.nombre}</h3>
-                      <p className="price">
-                        <HiOutlineCurrencyDollar size={16} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
-                        {item.precio.toFixed(2)}
-                      </p>
-                      {item.descripcion && (
-                        <p className="description">{item.descripcion}</p>
-                      )}
-                    </div>
-                    <div className="item-actions">
-                      <button
-                        onClick={() => handleStartEdit(item)}
-                        className="btn-edit"
-                        disabled={loading}
-                        title="Editar servicio"
-                      >
-                        <HiOutlinePencilSquare size={16} />
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="btn-delete"
-                        disabled={loading}
-                        title="Eliminar servicio"
-                      >
-                        <HiOutlineTrash size={16} />
-                        Eliminar
-                      </button>
-                    </div>
-                  </div>
-                )
+                        <div className="item-info">
+                          <h3>{item.nombre}</h3>
+                          <p className="price">
+                            <HiOutlineCurrencyDollar size={16} style={{ display: 'inline-block', marginRight: '4px', marginBottom: '-2px' }} />
+                            {item.precio.toFixed(2)}
+                          </p>
+                          {item.descripcion && (
+                            <p className="description">{item.descripcion}</p>
+                          )}
+                        </div>
+                        <div className="item-actions">
+                          <button
+                            onClick={() => {
+                              playClickSound();
+                              handleStartEdit(item);
+                            }}
+                            className="btn-edit"
+                            disabled={loading}
+                            title="Editar servicio"
+                          >
+                            <HiOutlinePencilSquare size={16} />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => {
+                              playClickSound();
+                              handleDeleteItem(item.id);
+                            }}
+                            className="btn-delete"
+                            disabled={loading}
+                            title="Eliminar servicio"
+                          >
+                            <HiOutlineTrash size={16} />
+                            Eliminar
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
-
-        <AppointmentsManager token={token} />
       </div>
     </div>
   );
